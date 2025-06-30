@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Leer las variables desde student.env
+NOMBRE=$(grep STUDENT_NAME student.env | cut -d '=' -f2 | xargs)
+CORREO=$(grep STUDENT_EMAIL student.env | cut -d '=' -f2 | xargs)
+
+# Validar si están vacías
+if [[ -z "$NOMBRE" || -z "$CORREO" ]]; then
+  echo "❌ ERROR: Debes llenar STUDENT_NAME y STUDENT_EMAIL en student.env antes de hacer push."
+  exit 1
+fi
+
+# Validar que NO sean valores por defecto
+if [[ "$NOMBRE" == "JUAN PÉREZ" || "$CORREO" == "jperez@est.ups.edu.ec" ]]; then
+  echo "❌ ERROR: Debes reemplazar los valores genéricos de ejemplo (JUAN PÉREZ / jperez@est.ups.edu.ec)."
+  exit 1
+fi
+
+# Si todo está bien
+echo "✅ Datos del estudiante validados correctamente."
