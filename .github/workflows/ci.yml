@@ -56,8 +56,8 @@ jobs:
         if [ -z "$PASADAS" ]; then PASADAS=0; fi
         if [ -z "$FALLADAS" ]; then FALLADAS=0; fi
         TOTAL=$((PASADAS + FALLADAS))
-        if [ "$TOTAL" -eq 0 ]; then TOTAL=2; fi
-        NOTA=$(echo "$PASADAS * 5" | bc)
+        if [ "$TOTAL" -eq 0 ]; then TOTAL=4; fi
+        NOTA=$(echo "$PASADAS * 2.5" | bc)
 
         USUARIO=$(echo "${{ steps.estudiante.outputs.correo }}" | cut -d '@' -f1)
         REPO=$(basename "$GITHUB_REPOSITORY")
