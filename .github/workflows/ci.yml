@@ -22,11 +22,46 @@ jobs:
         distribution: 'temurin'
 
     - name: Compilar archivos
+      id: compilar
+      continue-on-error: true
       run: |
         mkdir -p bin
-        javac -cp "lib/*" -d bin $(find src -name "*.java")
+        # Ejecutar compilación y capturar salida
+        if javac -cp "lib/*" -d bin $(find src -name "*.java"); then
+          echo "salida=0" >> $GITHUB_ENV
+        else
+          echo "salida=1" >> $GITHUB_ENV
+        fi
+      shell: bash
+    
+    - name: Guardar salida como output
+      id: output
+      run: |
+        echo "salida=$(cat salida.txt)" >> $GITHUB_OUTPUT
+      shell: bash
 
+    - name: Verificar compilación
+      if: env.salida == '1'
+      run: |
+        echo "::warning title=Error de compilación::El código no compiló. Revisa la sintaxis de tus clases."
+
+        
+        nombre=$(grep '^STUDENT_NAME=' student.env | cut -d '=' -f2 | xargs)
+        correo=$(grep '^STUDENT_EMAIL=' student.env | cut -d '=' -f2 | xargs)
+
+        USUARIO=$(echo "$correo" | cut -d '@' -f1)
+        REPO=$(basename "$GITHUB_REPOSITORY")
+        ARCHIVO="$USUARIO-$REPO.txt"
+
+        echo "👤 Estudiante: $nombre" > "$ARCHIVO"
+        echo "✉️ Correo: $correo" >> "$ARCHIVO"
+        echo "❌ Error: No se pudo compilar el código" >> "$ARCHIVO"
+        echo "📊 Nota final: 0 / 10" >> "$ARCHIVO"
+
+        echo "ARCHIVO=$ARCHIVO" >> $GITHUB_ENV
+    
     - name: Ejecutar pruebas
+      if: env.salida == '0'
       continue-on-error: true
       run: |
         mkdir -p resultados
@@ -38,6 +73,7 @@ jobs:
             | tee resultados/salida.txt
 
     - name: Leer nombre y correo del estudiante desde App.java
+      if: env.salida == '0'
       id: estudiante
       run: |
             nombre=$(grep '^STUDENT_NAME=' student.env | cut -d '=' -f2 | xargs)
@@ -46,6 +82,7 @@ jobs:
             echo "correo=$correo" >> $GITHUB_OUTPUT
     
     - name: Calcular nota y guardar en archivo
+      if: env.salida == '0'
       run: |
         PASADAS=$(grep "tests successful" resultados/salida.txt | grep -oP '\[\s*\K\d+')
         FALLADAS=$(grep "tests failed" resultados/salida.txt | grep -oP '\[\s*\K\d+')
@@ -69,9 +106,13 @@ jobs:
         echo "📊 Nota final: $NOTA / 10" >> "$ARCHIVO"
         
         echo "ARCHIVO=$ARCHIVO" >> $GITHUB_ENV
+      
+        # Mostrar nota como aviso visible en el resumen
+        echo "::notice title=Nota Final::${{ steps.estudiante.outputs.nombre }} obtuvo $NOTA / 10 (${PASADAS} de ${TOTAL} pruebas)"
 
 
     - name: Subir archivo de resultado como artefacto
+      if: env.salida == '0'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARCHIVO }}         
