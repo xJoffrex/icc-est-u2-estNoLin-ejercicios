@@ -1,7 +1,7 @@
 package main.Ejercicio_01_insert;
 
+public class Ejercicio_01_insert {
 
-public class BinarySearchTree {
     static class Node {
         int value;
         Node left, right;
@@ -19,12 +19,12 @@ public class BinarySearchTree {
     }
 
     private Node insertRecursive(Node current, int value) {
-        if (current == null) return new Node(value);
+        if (current == null) return new Node(value); // si ya no hay nodo se crea uno nuevo
 
         if (value < current.value) {
-            current.left = insertRecursive(current.left, value);
+            current.left = insertRecursive(current.left, value); // va por la izquierda si es menor
         } else if (value > current.value) {
-            current.right = insertRecursive(current.right, value);
+            current.right = insertRecursive(current.right, value); // va por la derecha si es mayor
         }
         return current;
     }
@@ -36,9 +36,9 @@ public class BinarySearchTree {
 
     private void inOrderRecursive(Node node) {
         if (node != null) {
-            inOrderRecursive(node.left);
+            inOrderRecursive(node.left); // se visita primero la izquierda
             System.out.print(node.value + " ");
-            inOrderRecursive(node.right);
+            inOrderRecursive(node.right); // luego la derecha
         }
     }
 }

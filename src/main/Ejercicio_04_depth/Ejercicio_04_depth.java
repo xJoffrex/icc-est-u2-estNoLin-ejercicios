@@ -1,6 +1,6 @@
 package main.Ejercicio_04_depth;
 
-public class CalculadorProfundidad {
+public class Ejercicio_04_depth {
 
     public static class Nodo {
         public int valor;
